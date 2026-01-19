@@ -15,10 +15,6 @@ namespace Graphql1.GraphQL.Mutation
             {
                 throw new GraphQLException("A user with same email already exist.");
             }
-
-
-
-
             var user = new User
             {
                 Name = userInput.Name,
@@ -34,13 +30,22 @@ namespace Graphql1.GraphQL.Mutation
             db.Users.Add(user);
             await db.SaveChangesAsync();
             return user;
-
-
         }
-        
+
+        public async Task<User> DeleteUser(DeleteUserInput deleteUserInput, [Service] AppDbContext db)
+        {
+           
+            var existedUser= await db.Users.FirstOrDefaultAsync(u=>u.Id==deleteUserInput.Id) ?? throw new GraphQLException("User does not exist");
+            db.Users.Remove(existedUser);
+            await db.SaveChangesAsync();
+            return existedUser;
+        }
+
+
     }
 
 
     //user input record
     public record AddUserInput(string Name,string Surname,string Email, string PlainPassword);
+    public record DeleteUserInput(int Id);
 }
