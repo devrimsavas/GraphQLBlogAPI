@@ -10,6 +10,18 @@ using HotChocolate.Authorization;
 
 
 var builder = WebApplication.CreateBuilder(args);
+//CORS 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowAnyOrigin();
+
+    });
+
+});
 
 //JWT 
 var jwtSettings = new JwtSettings();
@@ -65,6 +77,7 @@ builder.Services
     .AddTypeExtension<UserMutation>()   
     .AddTypeExtension<BlogMutation>()
     .AddTypeExtension<LoginMutation>()
+    .AddTypeExtension<AdminCreateMutation>()
     .AddAuthorization()
 
     .ModifyRequestOptions(opt =>

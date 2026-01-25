@@ -1,14 +1,19 @@
 ﻿using Graphql1.models;
 using Microsoft.EntityFrameworkCore;
 using HotChocolate.Types;
+using HotChocolate.Authorization;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Graphql1.GraphQL.Mutation
 {
     [ExtendObjectType("Mutation")]
     public class CategoryMutation
     {
-        public async Task<Category> AddCategory(AddCategoryInput categoryInput, [Service] AppDbContext db)
+        [Authorize(Roles = ["Admin","User"])]
+        public async Task<Category> AddCategory(AddCategoryInput categoryInput, [Service] AppDbContext db,ClaimsPrincipal claims)
         {
+            
             var newCategory=await db.Categories.FirstOrDefaultAsync(c=>c.Name==categoryInput.Name); 
             if (newCategory != null)
             {
@@ -24,7 +29,7 @@ namespace Graphql1.GraphQL.Mutation
             await db.SaveChangesAsync();
             return category;
         }
-
+        [Authorize(Roles = ["Admin"])]
         public async Task<Category> DeleteCategory(int categoryId, [Service] AppDbContext db)
         {
             var category=await db.Categories.FirstOrDefaultAsync(c=>c.Id==categoryId);

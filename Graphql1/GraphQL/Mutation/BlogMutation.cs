@@ -10,6 +10,7 @@ namespace Graphql1.GraphQL.Mutation
     [ExtendObjectType("Mutation")]
     public class BlogMutation
     {
+        [Authorize]
         public async Task<Blog> CreateBlog([Service] AppDbContext db,BlogCreateInput blogCreateInput)
         {
             if (blogCreateInput == null)
@@ -37,9 +38,15 @@ namespace Graphql1.GraphQL.Mutation
             return blog;
 
         }
+        [Authorize]
 
-        public async Task<Blog> DeleteBlog([Service] AppDbContext db,DeleteBlogInput deleteBlogInput)
+        public async Task<Blog> DeleteBlog([Service] AppDbContext db,DeleteBlogInput deleteBlogInput,ClaimsPrincipal claims)
         {
+            var userIdClaim = claims.FindFirst(JwtRegisteredClaimNames.Sub);
+            if (userIdClaim == null)
+                throw new GraphQLException("Unauthorized");
+            var currentUserId=int.Parse(userIdClaim.Value);
+           
             if (deleteBlogInput == null)
             {
                 throw new GraphQLException($"{nameof(Blog)} cannot be null");
@@ -49,6 +56,8 @@ namespace Graphql1.GraphQL.Mutation
             {
                 throw new GraphQLException("Blog does not exist");
             }
+            if (existedBlog.UserId != currentUserId)
+                throw new GraphQLException("You can only delete your own blog");
             db.Blogs.Remove(existedBlog);
             await db.SaveChangesAsync();
             return existedBlog;

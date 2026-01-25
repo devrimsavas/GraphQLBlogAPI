@@ -10,6 +10,8 @@ namespace Graphql1.models
         [Key]
         public int Id { get; set; }
         [Required]
+        public string Role { get; set; } = "User";
+        [Required]
         public string Name { get; set; }=String.Empty;
         [Required]
         public string Surname { get; set; }=String.Empty;

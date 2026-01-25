@@ -44,6 +44,8 @@ namespace Graphql1.GraphQL.Mutation
             {
                 new Claim(JwtRegisteredClaimNames.Sub,user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email,user.Email),
+                //add role 
+                new Claim(ClaimTypes.Role,user.Role),
                 new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString())
             };
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.SecretKey));

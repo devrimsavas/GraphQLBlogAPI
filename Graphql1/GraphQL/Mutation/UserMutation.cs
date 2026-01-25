@@ -2,6 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Identity;
+using HotChocolate.Authorization;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Graphql1.GraphQL.Mutation
 {
@@ -31,11 +34,26 @@ namespace Graphql1.GraphQL.Mutation
             await db.SaveChangesAsync();
             return user;
         }
-
-        public async Task<User> DeleteUser(DeleteUserInput deleteUserInput, [Service] AppDbContext db)
+        [Authorize(Roles = ["Admin","User"])]
+        public async Task<User> DeleteUser(DeleteUserInput deleteUserInput, [Service] AppDbContext db,ClaimsPrincipal claims )
         {
            
             var existedUser= await db.Users.FirstOrDefaultAsync(u=>u.Id==deleteUserInput.Id) ?? throw new GraphQLException("User does not exist");
+            var userIdClaim = claims.FindFirst(JwtRegisteredClaimNames.Sub);
+            if (userIdClaim==null)
+            {
+                throw new GraphQLException("Unauthorized");
+            }
+            //user id and role
+            var currentUserId=int.Parse(userIdClaim.Value);
+            var roleClaim = claims.FindFirst(ClaimTypes.Role) ?? throw new GraphQLException("Unauthorized");
+            var currentRole = roleClaim.Value;
+            //check 
+            if (currentRole != "Admin" && existedUser.Id != currentUserId)
+                throw new GraphQLException("You can only delete your own account");
+
+           
+
             db.Users.Remove(existedUser);
             await db.SaveChangesAsync();
             return existedUser;
