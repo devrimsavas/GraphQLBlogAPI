@@ -17,7 +17,7 @@ namespace Graphql1.GraphQL.Mutation
             var existedUser=await db.Users.FirstOrDefaultAsync(u=>u.Email == loginInput.Email);
             if (existedUser==null)
             {
-                throw new GraphQLException("No user registered with email");
+                throw new GraphQLException($"No user registered with email {loginInput.Email}");
             }
             var passwordHasher = new PasswordHasher<User>();
             var verifyResult=passwordHasher.VerifyHashedPassword(existedUser,existedUser.Password,loginInput.Password);
@@ -35,7 +35,9 @@ namespace Graphql1.GraphQL.Mutation
             {
                 Token = token,
                 UserId = existedUser.Id,
-                UserEmail = existedUser.Email
+                UserEmail = existedUser.Email,
+                UserName = existedUser.Name + "" + existedUser.Surname,
+                UserRole = existedUser.Role,
             };
         }
         public static string GenerateJwtToken(User user, JwtSettings jwtSettings)

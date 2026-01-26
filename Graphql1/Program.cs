@@ -89,6 +89,7 @@ builder.Services
 
 
 var app = builder.Build();
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
